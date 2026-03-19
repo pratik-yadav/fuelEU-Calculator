@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { AxiosError } from 'axios';
 import type { ApiError } from '@/types';
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://fueleu-calculator-mwea.onrender.com';
+const BASE_URL = 'https://fueleu-calculator-mwea.onrender.com';
 
 export const http = axios.create({
   baseURL: BASE_URL,
