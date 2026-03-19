@@ -10,6 +10,7 @@ export interface RouteFilters {
  * IRouteRepository — port for the Route aggregate.
  * Implemented by PrismaRouteRepository in the infra layer.
  */
+
 export interface IRouteRepository {
   findAll(filters?: RouteFilters): Promise<Route[]>;
   findById(id: string): Promise<Route | null>;

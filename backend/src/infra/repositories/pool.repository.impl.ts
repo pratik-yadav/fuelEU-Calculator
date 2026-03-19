@@ -14,7 +14,6 @@ export class PrismaPoolRepository implements IPoolRepository {
         createdAt: pool.createdAt,
         members: {
           create: members.map((m) => ({
-            poolId: pool.id,
             shipId: m.shipId,
             cbBefore: m.cbBefore,
             cbAfter: m.cbAfter,
