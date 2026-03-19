@@ -4,16 +4,37 @@ import helmet from '@fastify/helmet';
 import { ZodError } from 'zod';
 
 import { getPrismaClient } from '../infra/database/prisma.client';
-import { PrismaVesselRepository } from '../infra/repositories/vessel.repository.impl';
 
-import { CreateVesselHandler } from '../application/command-handler/create-vessel.handler';
-import { UpdateVesselHandler } from '../application/command-handler/update-vessel.handler';
-import { DeleteVesselHandler } from '../application/command-handler/delete-vessel.handler';
-import { GetVesselByIdHandler } from '../application/query-handlers/get-vessel-by-id.handler';
-import { GetAllVesselsHandler } from '../application/query-handlers/get-all-vessels.handler';
+// ── Repositories ────────────────────────────────────────────────────────────
+import { PrismaRouteRepository } from '../infra/repositories/route.repository.impl';
+import { PrismaShipComplianceRepository } from '../infra/repositories/ship-compliance.repository.impl';
+import { PrismaBankEntryRepository } from '../infra/repositories/bank-entry.repository.impl';
+import { PrismaPoolRepository } from '../infra/repositories/pool.repository.impl';
 
-import { VesselController } from '../interface/http/controllers/vessel.controller';
-import { registerVesselRoutes } from '../interface/http/routes/vessel.routes';
+// ── Command Handlers ─────────────────────────────────────────────────────────
+import { SetBaselineHandler } from '../application/command-handler/set-baseline.handler';
+import { BankComplianceHandler } from '../application/command-handler/bank-compliance.handler';
+import { ApplyBankHandler } from '../application/command-handler/apply-bank.handler';
+import { CreatePoolHandler } from '../application/command-handler/create-pool.handler';
+
+// ── Query Handlers ────────────────────────────────────────────────────────────
+import { GetAllRoutesHandler } from '../application/query-handlers/get-all-routes.handler';
+import { GetRouteComparisonHandler } from '../application/query-handlers/get-route-comparison.handler';
+import { GetComplianceBalanceHandler } from '../application/query-handlers/get-compliance-balance.handler';
+import { GetAdjustedCBHandler } from '../application/query-handlers/get-adjusted-cb.handler';
+import { GetBankingRecordsHandler } from '../application/query-handlers/get-banking-records.handler';
+
+// ── Controllers ───────────────────────────────────────────────────────────────
+import { RouteController } from '../interface/http/controllers/route.controller';
+import { ComplianceController } from '../interface/http/controllers/compliance.controller';
+import { BankingController } from '../interface/http/controllers/banking.controller';
+import { PoolingController } from '../interface/http/controllers/pooling.controller';
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+import { registerRouteRoutes } from '../interface/http/routes/route.routes';
+import { registerComplianceRoutes } from '../interface/http/routes/compliance.routes';
+import { registerBankingRoutes } from '../interface/http/routes/banking.routes';
+import { registerPoolingRoutes } from '../interface/http/routes/pooling.routes';
 
 import { AppError } from '../utils/error.util';
 import { errorResponse } from '../utils/response.util';
@@ -51,34 +72,68 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // ── Infrastructure (Adapters) ─────────────────────────────────────────────
   const prisma = getPrismaClient();
-  const vesselRepository = new PrismaVesselRepository(prisma);
+  const routeRepository = new PrismaRouteRepository(prisma);
+  const complianceRepository = new PrismaShipComplianceRepository(prisma);
+  const bankEntryRepository = new PrismaBankEntryRepository(prisma);
+  const poolRepository = new PrismaPoolRepository(prisma);
 
-  // ── Application (Use-cases) ───────────────────────────────────────────────
-  const createVesselHandler = new CreateVesselHandler(vesselRepository);
-  const updateVesselHandler = new UpdateVesselHandler(vesselRepository);
-  const deleteVesselHandler = new DeleteVesselHandler(vesselRepository);
-  const getVesselByIdHandler = new GetVesselByIdHandler(vesselRepository);
-  const getAllVesselsHandler = new GetAllVesselsHandler(vesselRepository);
+  // ── Application — Command Handlers ───────────────────────────────────────
+  const setBaselineHandler = new SetBaselineHandler(routeRepository);
+  const bankComplianceHandler = new BankComplianceHandler(
+    routeRepository,
+    complianceRepository,
+    bankEntryRepository,
+  );
+  const applyBankHandler = new ApplyBankHandler(routeRepository, bankEntryRepository);
+  const createPoolHandler = new CreatePoolHandler(routeRepository, poolRepository);
+
+  // ── Application — Query Handlers ──────────────────────────────────────────
+  const getAllRoutesHandler = new GetAllRoutesHandler(routeRepository);
+  const getRouteComparisonHandler = new GetRouteComparisonHandler(routeRepository);
+  const getComplianceBalanceHandler = new GetComplianceBalanceHandler(
+    routeRepository,
+    complianceRepository,
+  );
+  const getAdjustedCBHandler = new GetAdjustedCBHandler(
+    routeRepository,
+    complianceRepository,
+    bankEntryRepository,
+  );
+  const getBankingRecordsHandler = new GetBankingRecordsHandler(bankEntryRepository);
 
   // ── Interface (Controllers + Routes) ─────────────────────────────────────
-  const vesselController = new VesselController(
-    createVesselHandler,
-    updateVesselHandler,
-    deleteVesselHandler,
-    getVesselByIdHandler,
-    getAllVesselsHandler,
+  const routeController = new RouteController(
+    getAllRoutesHandler,
+    getRouteComparisonHandler,
+    setBaselineHandler,
   );
 
-  registerVesselRoutes(app, vesselController);
+  const complianceController = new ComplianceController(
+    getComplianceBalanceHandler,
+    getAdjustedCBHandler,
+  );
+
+  const bankingController = new BankingController(
+    getBankingRecordsHandler,
+    bankComplianceHandler,
+    applyBankHandler,
+  );
+
+  const poolingController = new PoolingController(createPoolHandler);
+
+  registerRouteRoutes(app, routeController);
+  registerComplianceRoutes(app, complianceController);
+  registerBankingRoutes(app, bankingController);
+  registerPoolingRoutes(app, poolingController);
 
   // ── Global Error Handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _req, reply) => {
     app.log.error(error);
 
     if (error instanceof AppError) {
-      reply.status(error.statusCode).send(
-        errorResponse(error.message, error.statusCode, error.details),
-      );
+      reply
+        .status(error.statusCode)
+        .send(errorResponse(error.message, error.statusCode, error.details));
       return;
     }
 
@@ -87,9 +142,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       return;
     }
 
-    reply
-      .status(500)
-      .send(errorResponse('An unexpected error occurred.', 500));
+    reply.status(500).send(errorResponse('An unexpected error occurred.', 500));
   });
 
   return app;
