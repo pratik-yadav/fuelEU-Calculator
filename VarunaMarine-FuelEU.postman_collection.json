@@ -1,0 +1,487 @@
+{
+  "info": {
+    "name": "VarunaMarine — FuelEU Compliance API",
+    "_postman_id": "varunamarine-fueleu-v1",
+    "description": "FuelEU Maritime Regulation compliance backend.\n\nBase URL: http://localhost:3000\n\nAll successful responses follow the shape:\n```json\n{ \"success\": true, \"data\": <payload> }\n```\n\nAll error responses follow:\n```json\n{ \"success\": false, \"error\": \"<message>\", \"statusCode\": <number>, \"details\": <optional> }\n```\n\n**Seed data shipIds**: R001 (HFO, baseline), R002 (MDO), R003 (LNG), R004 (VLSFO), R005 (Biofuel-Blend)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Returns server status and current timestamp."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"ok\",\n  \"timestamp\": \"2025-03-19T10:00:00.000Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Routes",
+      "item": [
+        {
+          "name": "GET /routes — List all routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes"],
+              "query": [
+                {
+                  "key": "fuelType",
+                  "value": "HFO",
+                  "description": "Filter by fuel type (optional)",
+                  "disabled": true
+                },
+                {
+                  "key": "year",
+                  "value": "2025",
+                  "description": "Filter by year (optional)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Returns all route profiles. Optionally filter by `fuelType` or `year`."
+          },
+          "response": [
+            {
+              "name": "200 OK — all routes",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"a1b2c3d4-0001-0000-0000-000000000001\",\n      \"routeId\": \"R001\",\n      \"vesselType\": \"Cargo\",\n      \"fuelType\": \"HFO\",\n      \"year\": 2025,\n      \"ghgIntensity\": 91.7442,\n      \"fuelConsumption\": 150,\n      \"distance\": 0,\n      \"totalEmissions\": 0,\n      \"isBaseline\": true\n    },\n    {\n      \"id\": \"a1b2c3d4-0002-0000-0000-000000000002\",\n      \"routeId\": \"R002\",\n      \"vesselType\": \"Cargo\",\n      \"fuelType\": \"MDO\",\n      \"year\": 2025,\n      \"ghgIntensity\": 90.76745,\n      \"fuelConsumption\": 80,\n      \"distance\": 0,\n      \"totalEmissions\": 0,\n      \"isBaseline\": false\n    },\n    {\n      \"id\": \"a1b2c3d4-0003-0000-0000-000000000003\",\n      \"routeId\": \"R003\",\n      \"vesselType\": \"Cargo\",\n      \"fuelType\": \"LNG\",\n      \"year\": 2025,\n      \"ghgIntensity\": 75.5,\n      \"fuelConsumption\": 100,\n      \"distance\": 0,\n      \"totalEmissions\": 0,\n      \"isBaseline\": false\n    },\n    {\n      \"id\": \"a1b2c3d4-0004-0000-0000-000000000004\",\n      \"routeId\": \"R004\",\n      \"vesselType\": \"Cargo\",\n      \"fuelType\": \"VLSFO\",\n      \"year\": 2025,\n      \"ghgIntensity\": 87.2,\n      \"fuelConsumption\": 120,\n      \"distance\": 0,\n      \"totalEmissions\": 0,\n      \"isBaseline\": false\n    },\n    {\n      \"id\": \"a1b2c3d4-0005-0000-0000-000000000005\",\n      \"routeId\": \"R005\",\n      \"vesselType\": \"Cargo\",\n      \"fuelType\": \"Biofuel-Blend\",\n      \"year\": 2025,\n      \"ghgIntensity\": 60,\n      \"fuelConsumption\": 90,\n      \"distance\": 0,\n      \"totalEmissions\": 0,\n      \"isBaseline\": false\n    }\n  ]\n}"
+            },
+            {
+              "name": "200 OK — filtered by fuelType=LNG",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"a1b2c3d4-0003-0000-0000-000000000003\",\n      \"routeId\": \"R003\",\n      \"vesselType\": \"Cargo\",\n      \"fuelType\": \"LNG\",\n      \"year\": 2025,\n      \"ghgIntensity\": 75.5,\n      \"fuelConsumption\": 100,\n      \"distance\": 0,\n      \"totalEmissions\": 0,\n      \"isBaseline\": false\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /routes/:id/baseline — Set baseline",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes/a1b2c3d4-0003-0000-0000-000000000003/baseline",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "a1b2c3d4-0003-0000-0000-000000000003", "baseline"]
+            },
+            "description": "Sets the route with the given **database UUID** as the compliance baseline. Only one route can be baseline at a time — the previous baseline is cleared automatically.\n\n**Note**: The `:id` param is the database `id` (UUID), not the `routeId` (e.g. R003).\nAfter seeding: R001 = `a1b2c3d4-0001-0000-0000-000000000001`, R003 = `a1b2c3d4-0003-0000-0000-000000000003`, etc."
+          },
+          "response": [
+            {
+              "name": "200 OK — baseline set to R003 (LNG)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"a1b2c3d4-0003-0000-0000-000000000003\",\n    \"routeId\": \"R003\",\n    \"vesselType\": \"Cargo\",\n    \"fuelType\": \"LNG\",\n    \"year\": 2025,\n    \"ghgIntensity\": 75.5,\n    \"fuelConsumption\": 100,\n    \"distance\": 0,\n    \"totalEmissions\": 0,\n    \"isBaseline\": true\n  }\n}"
+            },
+            {
+              "name": "404 Not Found — unknown id",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Route with id 'non-existent-uuid' not found.\",\n  \"statusCode\": 404\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /routes/comparison — Compare vs baseline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes/comparison",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "comparison"]
+            },
+            "description": "Returns all routes compared against the current baseline.\n\n- `percentDiff`: `((routeGhg / baselineGhg) - 1) × 100`\n- `compliant`: `routeGhg <= 89.33680` (FuelEU 2025–2029 target)\n\nReturns **422** if no baseline has been set."
+          },
+          "response": [
+            {
+              "name": "200 OK — comparison (baseline = R001 HFO 91.7442)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"routeId\": \"R001\",\n      \"ghgIntensity\": 91.7442,\n      \"baselineGhgIntensity\": 91.7442,\n      \"percentDiff\": 0,\n      \"compliant\": false\n    },\n    {\n      \"routeId\": \"R002\",\n      \"ghgIntensity\": 90.76745,\n      \"baselineGhgIntensity\": 91.7442,\n      \"percentDiff\": -1.06453,\n      \"compliant\": false\n    },\n    {\n      \"routeId\": \"R003\",\n      \"ghgIntensity\": 75.5,\n      \"baselineGhgIntensity\": 91.7442,\n      \"percentDiff\": -17.71614,\n      \"compliant\": true\n    },\n    {\n      \"routeId\": \"R004\",\n      \"ghgIntensity\": 87.2,\n      \"baselineGhgIntensity\": 91.7442,\n      \"percentDiff\": -4.95147,\n      \"compliant\": true\n    },\n    {\n      \"routeId\": \"R005\",\n      \"ghgIntensity\": 60,\n      \"baselineGhgIntensity\": 91.7442,\n      \"percentDiff\": -34.6239,\n      \"compliant\": true\n    }\n  ]\n}"
+            },
+            {
+              "name": "422 Unprocessable — no baseline set",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"No baseline route has been set. Use POST /routes/:id/baseline first.\",\n  \"statusCode\": 422\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compliance",
+      "item": [
+        {
+          "name": "GET /compliance/cb — Compliance Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/compliance/cb?shipId=R001&year=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["compliance", "cb"],
+              "query": [
+                {
+                  "key": "shipId",
+                  "value": "R001",
+                  "description": "Route ID of the ship (R001–R005)"
+                },
+                {
+                  "key": "year",
+                  "value": "2025",
+                  "description": "Reporting year"
+                }
+              ]
+            },
+            "description": "Computes and stores the Compliance Balance (CB) for a ship in a given year.\n\n**Formula**:\n```\nenergy = fuelConsumption × 41,000  (MJ)\nCB     = (89.33680 − ghgIntensity) × energy  (gCO₂eq)\n```\n\n- CB > 0 → surplus (ship is compliant, can bank or pool)\n- CB < 0 → deficit (ship exceeds GHG target, incurs penalty)\n\nResult is also upserted into `ship_compliance` table for caching."
+          },
+          "response": [
+            {
+              "name": "200 OK — R001 HFO (non-compliant, CB < 0)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"shipId\": \"R001\",\n    \"year\": 2025,\n    \"ghgIntensity\": 91.7442,\n    \"energy\": 6150000,\n    \"cb\": -14805780\n  }\n}"
+            },
+            {
+              "name": "200 OK — R003 LNG (compliant, CB > 0)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"shipId\": \"R003\",\n    \"year\": 2025,\n    \"ghgIntensity\": 75.5,\n    \"energy\": 4100000,\n    \"cb\": 567810800\n  }\n}"
+            },
+            {
+              "name": "200 OK — R004 VLSFO (compliant, CB > 0)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"shipId\": \"R004\",\n    \"year\": 2025,\n    \"ghgIntensity\": 87.2,\n    \"energy\": 4920000,\n    \"cb\": 105168960\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — missing shipId",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"shipId query parameter is required.\",\n  \"statusCode\": 400\n}"
+            },
+            {
+              "name": "404 Not Found — unknown shipId",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Route (ship) with id 'R999' not found.\",\n  \"statusCode\": 404\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /compliance/adjusted-cb — Adjusted CB (after banking)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/compliance/adjusted-cb?shipId=R003&year=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["compliance", "adjusted-cb"],
+              "query": [
+                {
+                  "key": "shipId",
+                  "value": "R003",
+                  "description": "Route ID of the ship"
+                },
+                {
+                  "key": "year",
+                  "value": "2025",
+                  "description": "Reporting year"
+                }
+              ]
+            },
+            "description": "Returns the Adjusted CB after accounting for all banking ledger entries.\n\n**Formula**:\n```\nadjustedCB = CB + Σ(bank_entries.amount_gco2eq)\n```\n\nBank entries are signed:\n- Positive entries = surplus banked (added to CB)\n- Negative entries = banked surplus applied to offset deficit (subtracted from CB)"
+          },
+          "response": [
+            {
+              "name": "200 OK — R003 LNG, no banking yet",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"shipId\": \"R003\",\n    \"year\": 2025,\n    \"cb\": 567810800,\n    \"bankedTotal\": 0,\n    \"adjustedCb\": 567810800\n  }\n}"
+            },
+            {
+              "name": "200 OK — R003 after banking 50000",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"shipId\": \"R003\",\n    \"year\": 2025,\n    \"cb\": 567810800,\n    \"bankedTotal\": 50000,\n    \"adjustedCb\": 567860800\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Banking",
+      "item": [
+        {
+          "name": "GET /banking/records — List bank entries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/banking/records?shipId=R003&year=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["banking", "records"],
+              "query": [
+                {
+                  "key": "shipId",
+                  "value": "R003",
+                  "description": "Route ID of the ship"
+                },
+                {
+                  "key": "year",
+                  "value": "2025",
+                  "description": "Reporting year"
+                }
+              ]
+            },
+            "description": "Returns all banking ledger entries for a ship in a given year, ordered by creation time.\n\nEach entry has a `type` field: `BANKED` (positive amount) or `APPLIED` (negative amount)."
+          },
+          "response": [
+            {
+              "name": "200 OK — no entries",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": []\n}"
+            },
+            {
+              "name": "200 OK — entries present",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"f3a1bc00-0001-0000-0000-000000000001\",\n      \"shipId\": \"R003\",\n      \"year\": 2025,\n      \"amountGco2eq\": 50000,\n      \"type\": \"BANKED\",\n      \"createdAt\": \"2025-03-19T10:15:00.000Z\"\n    },\n    {\n      \"id\": \"f3a1bc00-0002-0000-0000-000000000002\",\n      \"shipId\": \"R003\",\n      \"year\": 2025,\n      \"amountGco2eq\": -20000,\n      \"type\": \"APPLIED\",\n      \"createdAt\": \"2025-03-19T11:00:00.000Z\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — missing year",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"year query parameter is required.\",\n  \"statusCode\": 400\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /banking/bank — Bank surplus CB",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipId\": \"R003\",\n  \"year\": 2025,\n  \"amount\": 50000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/banking/bank",
+              "host": ["{{baseUrl}}"],
+              "path": ["banking", "bank"]
+            },
+            "description": "Banks a portion of a ship's surplus Compliance Balance (Article 20).\n\n**Validations**:\n- Ship must have CB > 0 (surplus)\n- `amount` must be positive\n- `amount` cannot exceed the remaining bankable CB (CB minus already-banked)\n\nR003 (LNG) has CB ≈ 567,810,800 gCO₂eq — well above the amount in this example.\n\nCreates a positive bank entry (`type: BANKED`)."
+          },
+          "response": [
+            {
+              "name": "201 Created — banked successfully",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"f3a1bc00-0001-0000-0000-000000000001\",\n    \"shipId\": \"R003\",\n    \"year\": 2025,\n    \"amountGco2eq\": 50000,\n    \"type\": \"BANKED\",\n    \"createdAt\": \"2025-03-19T10:15:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "422 Unprocessable — ship has no surplus (R001 HFO)",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Ship 'R001' has no surplus to bank (CB = -14805780.00 gCO₂eq).\",\n  \"statusCode\": 422\n}"
+            },
+            {
+              "name": "422 Unprocessable — amount exceeds available CB",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Cannot bank 999999999999 gCO₂eq — available CB surplus is 567810800.00 gCO₂eq.\",\n  \"statusCode\": 422\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid body",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Validation failed.\",\n  \"statusCode\": 400,\n  \"details\": [\n    { \"code\": \"invalid_type\", \"path\": [\"year\"], \"message\": \"Required\" },\n    { \"code\": \"invalid_type\", \"path\": [\"amount\"], \"message\": \"Required\" }\n  ]\n}"
+            },
+            {
+              "name": "404 Not Found — unknown shipId",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Route (ship) with id 'R999' not found.\",\n  \"statusCode\": 404\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /banking/apply — Apply banked CB to offset deficit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipId\": \"R001\",\n  \"year\": 2025,\n  \"amount\": 10000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/banking/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["banking", "apply"]
+            },
+            "description": "Applies previously banked surplus CB to offset a ship's current deficit (Article 20).\n\n**Validations**:\n- Ship must have CB < 0 (deficit)\n- Net banked balance must be > 0\n- `amount` must not exceed the net banked balance\n\nR001 (HFO) has CB ≈ -14,805,780 gCO₂eq. You must first bank from a surplus ship before applying.\n\nCreates a negative bank entry (`type: APPLIED`)."
+          },
+          "response": [
+            {
+              "name": "201 Created — applied successfully",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"f3a1bc00-0003-0000-0000-000000000003\",\n    \"shipId\": \"R001\",\n    \"year\": 2025,\n    \"amountGco2eq\": -10000,\n    \"type\": \"APPLIED\",\n    \"createdAt\": \"2025-03-19T11:30:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "422 Unprocessable — ship has no deficit (R003 LNG)",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Ship 'R003' has no deficit to offset (CB = 567810800.00 gCO₂eq).\",\n  \"statusCode\": 422\n}"
+            },
+            {
+              "name": "422 Unprocessable — no banked surplus available",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Ship 'R001' has no banked surplus to apply (net balance = 0.00 gCO₂eq).\",\n  \"statusCode\": 422\n}"
+            },
+            {
+              "name": "422 Unprocessable — amount exceeds net banked",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Cannot apply 999999 — net banked balance is 50000.00 gCO₂eq.\",\n  \"statusCode\": 422\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pooling",
+      "item": [
+        {
+          "name": "POST /pools — Create a pool",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"year\": 2025,\n  \"members\": [\"R003\", \"R005\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pools",
+              "host": ["{{baseUrl}}"],
+              "path": ["pools"]
+            },
+            "description": "Creates an Article 21 compliance pool. A surplus ship offsets a deficit ship's CB.\n\n**Algorithm** (greedy):\n1. Validate Σ(CB of all members) ≥ 0 — pool must be net-positive\n2. Sort ships: highest surplus first, deepest deficit last\n3. Transfer surplus → deficit, capped so surplus ship never goes below CB = 0\n\n**Example** (both surplus ships R003 + R005):\n- R003: CB ≈ +567,810,800\n- R005: CB ≈ +1,201,618,800\n- Both already positive — no transfer needed, cbAfter = cbBefore\n\n**Example with deficit** (mix R001 deficit + R003 surplus):\n- R001: CB ≈ -14,805,780 (deficit)\n- R003: CB ≈ +567,810,800 (surplus)\n- Transfer: R001 gets +14,805,780 from R003 → R001.cbAfter = 0"
+          },
+          "response": [
+            {
+              "name": "201 Created — two surplus ships (R003 + R005)",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"shipId\": \"R005\",\n      \"cbBefore\": 1201618800,\n      \"cbAfter\": 1201618800\n    },\n    {\n      \"shipId\": \"R003\",\n      \"cbBefore\": 567810800,\n      \"cbAfter\": 567810800\n    }\n  ]\n}"
+            },
+            {
+              "name": "201 Created — surplus + deficit pool (R003 offsets R001)",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"shipId\": \"R003\",\n      \"cbBefore\": 567810800,\n      \"cbAfter\": 553005020\n    },\n    {\n      \"shipId\": \"R001\",\n      \"cbBefore\": -14805780,\n      \"cbAfter\": 0\n    }\n  ]\n}"
+            },
+            {
+              "name": "422 Unprocessable — total CB is negative",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Pool total CB is -29611560.00 gCO₂eq — must be ≥ 0 for a valid pool.\",\n  \"statusCode\": 422\n}"
+            },
+            {
+              "name": "400 Bad Request — less than 2 members",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Validation failed.\",\n  \"statusCode\": 400,\n  \"details\": [\n    {\n      \"code\": \"too_small\",\n      \"path\": [\"members\"],\n      \"message\": \"A pool requires at least 2 member ship IDs.\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — missing year",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Validation failed.\",\n  \"statusCode\": 400,\n  \"details\": [\n    {\n      \"code\": \"invalid_type\",\n      \"path\": [\"year\"],\n      \"message\": \"Required\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "404 Not Found — member ship does not exist",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Route (ship) with id 'R999' not found.\",\n  \"statusCode\": 404\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

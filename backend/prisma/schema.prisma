@@ -7,34 +7,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum VesselType {
-  CARGO
-  TANKER
-  BULK_CARRIER
-  CONTAINER
-  PASSENGER
-  FISHING
-  OTHER
+model Route {
+  id              String   @id @default(uuid())
+  routeId         String   @unique @map("route_id")
+  fuelType        String   @map("fuel_type")
+  ghgIntensity    Float    @map("ghg_intensity")
+  fuelConsumption Float    @map("fuel_consumption")
+  distance        Float    @default(0)
+  totalEmissions  Float    @default(0) @map("total_emissions")
+  isBaseline      Boolean  @default(false) @map("is_baseline")
+  year            Int      @default(2025)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("routes")
 }
 
-enum VesselStatus {
-  ACTIVE
-  INACTIVE
-  UNDER_MAINTENANCE
-  DECOMMISSIONED
+model ShipCompliance {
+  id        String   @id @default(uuid())
+  shipId    String   @map("ship_id")
+  year      Int
+  cbGco2eq  Float    @map("cb_gco2eq")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([shipId, year])
+  @@map("ship_compliance")
 }
 
-model Vessel {
-  id           String       @id @default(uuid())
-  imoNumber    String       @unique @map("imo_number")
-  name         String
-  flag         String
-  vesselType   VesselType   @map("vessel_type")
-  grossTonnage Float        @map("gross_tonnage")
-  status       VesselStatus @default(ACTIVE)
-  yearBuilt    Int          @map("year_built")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
+model BankEntry {
+  id            String   @id @default(uuid())
+  shipId        String   @map("ship_id")
+  year          Int
+  amountGco2eq  Float    @map("amount_gco2eq")
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  @@map("vessels")
+  @@map("bank_entries")
+}
+
+model Pool {
+  id        String       @id @default(uuid())
+  year      Int
+  createdAt DateTime     @default(now()) @map("created_at")
+  members   PoolMember[]
+
+  @@map("pools")
+}
+
+model PoolMember {
+  poolId    String @map("pool_id")
+  shipId    String @map("ship_id")
+  cbBefore  Float  @map("cb_before")
+  cbAfter   Float  @map("cb_after")
+
+  pool Pool @relation(fields: [poolId], references: [id])
+
+  @@id([poolId, shipId])
+  @@map("pool_members")
 }
