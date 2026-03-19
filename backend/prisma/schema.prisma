@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VesselType {
+  CARGO
+  TANKER
+  BULK_CARRIER
+  CONTAINER
+  PASSENGER
+  FISHING
+  OTHER
+}
+
+enum VesselStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+model Vessel {
+  id           String       @id @default(uuid())
+  imoNumber    String       @unique @map("imo_number")
+  name         String
+  flag         String
+  vesselType   VesselType   @map("vessel_type")
+  grossTonnage Float        @map("gross_tonnage")
+  status       VesselStatus @default(ACTIVE)
+  yearBuilt    Int          @map("year_built")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@map("vessels")
+}
