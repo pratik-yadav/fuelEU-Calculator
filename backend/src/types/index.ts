@@ -1,17 +1,9 @@
-export type VesselType =
-  | 'CARGO'
-  | 'TANKER'
-  | 'BULK_CARRIER'
-  | 'CONTAINER'
-  | 'PASSENGER'
-  | 'FISHING'
-  | 'OTHER';
+// ── FuelEU Domain Types ────────────────────────────────────────────────────
 
-export type VesselStatus =
-  | 'ACTIVE'
-  | 'INACTIVE'
-  | 'UNDER_MAINTENANCE'
-  | 'DECOMMISSIONED';
+export type FuelType = 'HFO' | 'MDO' | 'LNG' | 'VLSFO' | 'Biofuel-Blend' | string;
+export type VesselType = 'Tanker' | 'Cargo' | 'Bulk Carrier' | string;
+
+// ── Shared HTTP Types ──────────────────────────────────────────────────────
 
 export interface PaginationMeta {
   total: number;
